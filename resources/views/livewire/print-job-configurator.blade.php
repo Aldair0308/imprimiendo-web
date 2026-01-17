@@ -129,7 +129,7 @@
                 <div class="flex items-center justify-between w-full mb-4">
                     <h3 class="text-lg font-bold text-gray-800">Vista Previa</h3>
                     <div class="flex gap-2">
-                        <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">Modo: {{ $colorMode == '1' ? 'Color' : 'Blanco y Negro' }}</span>
+                        <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium" x-text="'Modo: ' + (colorMode === '1' ? 'Color' : 'Blanco y Negro')">Modo: {{ $colorMode == '1' ? 'Color' : 'Blanco y Negro' }}</span>
                         @if($totalPages > 0)
                             <span class="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">
                                 {{ $totalPages }} página(s)
