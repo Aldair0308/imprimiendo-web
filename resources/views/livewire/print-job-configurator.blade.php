@@ -9,14 +9,22 @@
         class="grid grid-cols-1 md:grid-cols-2 gap-6"
         x-data="{
             localPreviewUrl: null,
+            colorMode: '{{ $colorMode }}',
             handleFileChange(e) {
                 const file = e.target.files?.[0];
                 if (!file || file.type !== 'application/pdf') return;
 
                 if (this.localPreviewUrl) URL.revokeObjectURL(this.localPreviewUrl);
                 this.localPreviewUrl = URL.createObjectURL(file);
+            },
+            init() {
+                // Listen for color mode changes from Livewire
+                window.addEventListener('color-mode-changed', (event) => {
+                    this.colorMode = event.detail.colorMode;
+                });
             }
         }"
+        x-on:color-mode-changed.window="colorMode = $event.detail.colorMode"
     >
         <!-- Panel de Configuración -->
         <div class="space-y-6 bg-white p-6 rounded-xl shadow-sm border border-gray-100">
@@ -50,7 +58,9 @@
                 <!-- Opciones de Color -->
                 <div class="space-y-2">
                     <label class="block text-sm font-semibold text-gray-700">Modo de Color</label>
-                    <select wire:model.live="color" class="w-full border-gray-200 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm">
+                    <select wire:model="colorMode" 
+                            x-model="colorMode"
+                            class="w-full border-gray-200 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm">
                         <option value="1">Color</option>
                         <option value="0">Blanco y Negro</option>
                     </select>
@@ -61,7 +71,7 @@
                     <label class="block text-sm font-semibold text-gray-700 mb-2">Número de Copias</label>
                     <div class="flex items-center gap-3">
                         <button type="button" wire:click="$set('copies', Math.max(1, copies - 1))" class="p-2 border rounded-lg hover:bg-gray-100">-</button>
-                        <input type="number" wire:model.live="copies" min="1" max="100" class="w-20 text-center border-gray-200 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                        <input type="number" wire:model="copies" min="1" max="100" class="w-20 text-center border-gray-200 rounded-lg focus:ring-blue-500 focus:border-blue-500">
                         <button type="button" wire:click="$set('copies', copies + 1)" class="p-2 border rounded-lg hover:bg-gray-100">+</button>
                     </div>
                     @error('copies') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
@@ -75,7 +85,7 @@
                             <span class="text-xs text-gray-500">Total: {{ $totalPages }} página(s)</span>
                         @endif
                     </div>
-                    <select wire:model.live="pageRange" class="w-full border-gray-200 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm">
+                    <select wire:model="pageRange" class="w-full border-gray-200 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm">
                         <option value="all">Todas las páginas</option>
                         <option value="even">Solo pares</option>
                         <option value="odd">Solo impares</option>
@@ -91,7 +101,7 @@
                             <span class="text-xs text-gray-500 block">Del 1 al {{ $totalPages }}</span>
                         @endif
                     </label>
-                    <input type="text" wire:model.live="specificPages" placeholder="1, 3, 5-10" class="w-full border-gray-200 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm" 
+                    <input type="text" wire:model="specificPages" placeholder="1, 3, 5-10" class="w-full border-gray-200 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm" 
                            aria-describedby="pageHelp">
                     @error('specificPages') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                     <p id="pageHelp" class="text-xs text-gray-500 mt-1">Separe páginas con comas y use guiones para rangos</p>
@@ -119,7 +129,7 @@
                 <div class="flex items-center justify-between w-full mb-4">
                     <h3 class="text-lg font-bold text-gray-800">Vista Previa</h3>
                     <div class="flex gap-2">
-                        <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">Modo: {{ $color === '1' ? 'Color' : 'Blanco y Negro' }}</span>
+                        <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">Modo: {{ $colorMode == '1' ? 'Color' : 'Blanco y Negro' }}</span>
                         @if($totalPages > 0)
                             <span class="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">
                                 {{ $totalPages }} página(s)
@@ -128,10 +138,11 @@
                     </div>
                 </div>
 
-                <div class="relative w-full bg-white shadow-2xl rounded-lg overflow-hidden border border-gray-200 transition-all duration-300">
+                <div class="relative w-full bg-white shadow-2xl rounded-lg overflow-hidden border border-gray-200 transition-all duration-300" wire:key="pdf-preview-{{ $colorMode }}">
                     <iframe x-bind:src="localPreviewUrl ? (localPreviewUrl + '#toolbar=0&navpanes=0&scrollbar=0') : 'about:blank'"
-                            class="w-full h-[600px] border-none transition-all duration-300 {{ $color === '0' ? 'preview-grayscale' : '' }}"
-                            style="{{ $color === '0' ? 'filter: grayscale(100%); -webkit-filter: grayscale(100%);' : '' }}"
+                            class="w-full h-[600px] border-none transition-all duration-300"
+                            x-bind:class="colorMode === '0' ? 'preview-grayscale' : ''"
+                            x-bind:style="colorMode === '0' ? 'filter: grayscale(100%); -webkit-filter: grayscale(100%);' : ''"
                             title="Vista Previa PDF"></iframe>
                 </div>
 

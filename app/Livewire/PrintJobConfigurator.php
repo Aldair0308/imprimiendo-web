@@ -12,7 +12,7 @@ class PrintJobConfigurator extends Component
 
     public $pdfFile;
 
-    public $color = '1'; // '1' para Color, '0' para B/N
+    public $colorMode = '1'; // '1' para Color, '0' para B/N
 
     public $copies = 1;
 
@@ -61,6 +61,13 @@ class PrintJobConfigurator extends Component
         }
     }
 
+    public function updatedColorMode($value)
+    {
+        $this->colorMode = (string) $value;
+        // Force re-render of the preview
+        $this->dispatch('color-mode-changed', ['colorMode' => $this->colorMode]);
+    }
+
     public function submit()
     {
         $this->validate([
@@ -77,7 +84,7 @@ class PrintJobConfigurator extends Component
 
         // Aquí iría la lógica para procesar el trabajo de impresión
         $this->dispatch('print-job-submitted', [
-            'color' => $this->color,
+            'color' => $this->colorMode,
             'copies' => $this->copies,
             'pageRange' => $this->pageRange,
             'specificPages' => $this->specificPages,
