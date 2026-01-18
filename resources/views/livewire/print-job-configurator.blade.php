@@ -49,71 +49,69 @@
                             hover:file:bg-blue-100
                             border border-gray-200 rounded-lg cursor-pointer focus:outline-none transition-all">
                         <div wire:loading wire:target="pdfFile" class="mt-2 text-xs text-blue-600 animate-pulse">
-                            Subiendo archivo...
+                            Procesando archivo...
                         </div>
+                        @if($pdfFile)
+                            <div class="mt-2 text-xs text-green-600 flex items-center gap-1">
+                                ✓ Archivo seleccionado: {{ $pdfFile->getClientOriginalName() }}
+                            </div>
+                        @endif
                     </div>
                     @error('pdfFile') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                 </div>
 
                 <!-- Opciones de Color -->
                 <div class="space-y-2">
-                    <label class="block text-sm font-semibold text-gray-700">Modo de Color</label>
-                    <select wire:model="colorMode" 
-                            x-model="colorMode"
-                            class="w-full border-gray-200 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm">
-                        <option value="1">Color</option>
-                        <option value="0">Blanco y Negro</option>
-                    </select>
-                </div>
-
-                <!-- Número de Copias -->
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Número de Copias</label>
-                    <div class="flex items-center gap-3">
-                        <button type="button" wire:click="$set('copies', Math.max(1, copies - 1))" class="p-2 border rounded-lg hover:bg-gray-100">-</button>
-                        <input type="number" wire:model="copies" min="1" max="100" class="w-20 text-center border-gray-200 rounded-lg focus:ring-blue-500 focus:border-blue-500">
-                        <button type="button" wire:click="$set('copies', copies + 1)" class="p-2 border rounded-lg hover:bg-gray-100">+</button>
-                    </div>
-                    @error('copies') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
+                     <label class="block text-sm font-semibold text-gray-700">Modo de Color</label>
+                     <select wire:model="colorMode"
+                             x-model="colorMode"
+                             class="w-full border-gray-200 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm">
+                         <option value="1">Color</option>
+                         <option value="0">Blanco y Negro</option>
+                     </select>
                 </div>
 
                 <!-- Selección de Páginas -->
-                <div>
-                    <div class="flex items-center justify-between mb-2">
-                        <label class="block text-sm font-semibold text-gray-700">Rango de Páginas</label>
-                        @if($totalPages > 0)
-                            <span class="text-xs text-gray-500">Total: {{ $totalPages }} página(s)</span>
-                        @endif
-                    </div>
-                    <select wire:model="pageRange" class="w-full border-gray-200 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm">
-                        <option value="all">Todas las páginas</option>
-                        <option value="even">Solo pares</option>
-                        <option value="odd">Solo impares</option>
-                        <option value="custom">Personalizado</option>
-                    </select>
-                </div>
-
-                @if($pageRange === 'custom')
-                <div class="animate-fadeIn">
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">
-                        Especificar páginas (ej: 1,3,5-10)
-                        @if($totalPages > 0)
-                            <span class="text-xs text-gray-500 block">Del 1 al {{ $totalPages }}</span>
-                        @endif
-                    </label>
-                    <input type="text" wire:model="specificPages" placeholder="1, 3, 5-10" class="w-full border-gray-200 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm" 
-                           aria-describedby="pageHelp">
-                    @error('specificPages') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
-                    <p id="pageHelp" class="text-xs text-gray-500 mt-1">Separe páginas con comas y use guiones para rangos</p>
-                    
-                    @if(count($selectedPages) > 0)
-                        <div class="mt-2 p-2 bg-blue-50 rounded-lg">
-                            <p class="text-xs text-blue-700 font-medium">Páginas seleccionadas: {{ implode(', ', $selectedPages) }}</p>
-                        </div>
-                    @endif
+                @if($pdfFile)
+                <div class="space-y-2">
+                    <label class="block text-sm font-semibold text-gray-700">Páginas a imprimir</label>
+                    <input type="text" wire:model.live="selectedPages" placeholder="ej: 1-3,5 o dejar vacío para todas"
+                           class="w-full border-gray-200 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm px-3 py-2">
+                    <p class="text-xs text-gray-500">Deja vacío para imprimir todas las páginas o especifica rangos separados por comas (ej: 1-3,5)</p>
                 </div>
                 @endif
             </div>
+
+            <!-- Información de páginas -->
+            @if($pdfFile)
+                <div class="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                    <div class="text-sm font-medium text-blue-800 mb-3">
+                        📄 Información del documento
+                    </div>
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-600">Total de páginas:</span>
+                            <div class="flex items-center gap-2">
+                                @if($totalPages > 0)
+                                    <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-bold">
+                                        {{ $totalPages }}
+                                    </span>
+                                @else
+                                    <span class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-bold">
+                                        Contando...
+                                    </span>
+                                @endif
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-600">Páginas a imprimir:</span>
+                            <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">
+                                {{ $pagesToPrint > 0 ? $pagesToPrint : 0 }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            @endif
 
             <button wire:click="submit" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-200 transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -128,41 +126,20 @@
             <div x-show="localPreviewUrl" x-cloak class="w-full h-full flex flex-col items-center">
                 <div class="flex items-center justify-between w-full mb-4">
                     <h3 class="text-lg font-bold text-gray-800">Vista Previa</h3>
-                    <div class="flex gap-2">
-                        <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium" x-text="'Modo: ' + (colorMode === '1' ? 'Color' : 'Blanco y Negro')">Modo: {{ $colorMode == '1' ? 'Color' : 'Blanco y Negro' }}</span>
-                        @if($totalPages > 0)
-                            <span class="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">
-                                {{ $totalPages }} página(s)
-                            </span>
-                        @endif
+                    <div class="flex gap-2 flex-wrap">
+                        <span class="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">Total: {{ $totalPages }} páginas</span>
+                        <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">A imprimir: {{ $pagesToPrint }} páginas</span>
+                         <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium" x-text="'Modo: ' + (colorMode === '1' ? 'Color' : 'Blanco y Negro')">Modo: {{ $colorMode == '1' ? 'Color' : 'Blanco y Negro' }}</span>
                     </div>
                 </div>
 
-                <div class="relative w-full bg-white shadow-2xl rounded-lg overflow-hidden border border-gray-200 transition-all duration-300" wire:key="pdf-preview-{{ $colorMode }}">
+                <div class="relative w-full bg-white shadow-2xl rounded-lg overflow-hidden border border-gray-200 transition-all duration-300">
                     <iframe x-bind:src="localPreviewUrl ? (localPreviewUrl + '#toolbar=0&navpanes=0&scrollbar=0') : 'about:blank'"
                             class="w-full h-[600px] border-none transition-all duration-300"
                             x-bind:class="colorMode === '0' ? 'preview-grayscale' : ''"
                             x-bind:style="colorMode === '0' ? 'filter: grayscale(100%); -webkit-filter: grayscale(100%);' : ''"
                             title="Vista Previa PDF"></iframe>
                 </div>
-
-                @if($pageRange === 'custom' && count($selectedPages) > 0)
-                    <div class="mt-4 p-3 bg-blue-50 rounded-lg w-full">
-                        <p class="text-sm text-blue-800 font-medium">Páginas a imprimir: {{ implode(', ', $selectedPages) }}</p>
-                    </div>
-                @elseif($pageRange === 'even')
-                    <div class="mt-4 p-3 bg-blue-50 rounded-lg w-full">
-                        <p class="text-sm text-blue-800 font-medium">Se imprimirán solo páginas pares</p>
-                    </div>
-                @elseif($pageRange === 'odd')
-                    <div class="mt-4 p-3 bg-blue-50 rounded-lg w-full">
-                        <p class="text-sm text-blue-800 font-medium">Se imprimirán solo páginas impares</p>
-                    </div>
-                @else
-                    <div class="mt-4 p-3 bg-blue-50 rounded-lg w-full">
-                        <p class="text-sm text-blue-800 font-medium">Se imprimirán todas las páginas</p>
-                    </div>
-                @endif
 
                 <p class="mt-4 text-sm text-gray-500 italic text-center">
                     * La vista previa es una representación aproximada. La configuración de páginas se aplicará al imprimir.
